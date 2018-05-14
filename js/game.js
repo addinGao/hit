@@ -1,7 +1,16 @@
-/* by：弦云孤赫——David Yang
-** github - https://github.com/yangyunhe369
-*/
-// 游戏主要运行逻辑
+var NebPay = require("nebpay")
+var nebPay = new NebPay();
+var dappAddress = "n1eGnFkZRrAUx7a8nPKaYBGf7GU58Y3kC9D"
+
+var HttpRequest = require("nebulas").HttpRequest;
+var Neb = require("nebulas").Neb;
+var Account = require("nebulas").Account;
+var Transaction = require("nebulas").Transaction;
+var Unit = require("nebulas").Unit;
+var neb = new Neb();
+neb.setRequest(new HttpRequest("https://testnet.nebulas.io"));
+// neb.setRequest(new HttpRequest("https://mainnet.nebulas.io"));
+var timersss,xunhuan;
 class Game {
   constructor (fps = 60) {
     let g = {
@@ -61,7 +70,7 @@ class Game {
     this.context.fillText(obj.textLv + obj.lv, this.canvas.width - 100, obj.y)
   }
   // 游戏结束
-  gameOver () {
+  gameOver (scores) {
     // 清除定时器
     clearInterval(this.timer)
     // 清除画布
@@ -69,9 +78,10 @@ class Game {
     // 绘制背景图
     this.drawBg()
     // 绘制提示文字
-    this.context.font = '48px Microsoft YaHei'
-    this.context.fillStyle = '#fff'
-    this.context.fillText('游戏结束', 404, 226)
+    this.context.font = '30px Microsoft YaHei'
+		this.context.fillStyle = '#fff'
+		scores = "游戏结束，得分"+scores+"分"
+    this.context.fillText(scores, 404, 226)
   }
   // 游戏晋级
   goodGame () {
@@ -161,7 +171,8 @@ class Game {
     // let p = paddle
     // let b = ball
     g.timer = setInterval(function () {
-      // actions集合
+			// actions集合
+			
       let actions = Object.keys(g.actions)
       for (let i = 0; i < actions.length; i++) {
         let key = actions[i]
@@ -179,7 +190,7 @@ class Game {
       }
       // 判断游戏是否结束
       if (g.state === g.state_GAMEOVER) {
-        g.gameOver()
+        g.gameOver(score.allScore)
       }
       // 判断游戏开始时执行事件
       if (g.state === g.state_RUNNING) {
@@ -226,40 +237,219 @@ class Game {
         paddle.moveRight()
       }
     })
-    window.addEventListener('keydown', function (event) {
-      switch (event.keyCode) {
-        // 注册空格键发射事件
-        case 32 :
-          if (g.state === g.state_GAMEOVER) { // 游戏结束时
-            // 开始游戏
-            g.state = g.state_START
-            // 初始化
-            _main.start()
-          } else { 
-            // 开始游戏
-            ball.fired = true
-            g.state = g.state_RUNNING
-          }
-          break
-        // N 键进入下一关卡
-        case 78 :
-          // 游戏状态为通关，且不为最终关卡时
-          if (g.state === g.state_UPDATE && _main.LV !== MAXLV) { // 进入下一关
-            // 开始游戏
-            g.state = g.state_START
-            // 初始化下一关卡
-            _main.start(++_main.LV)
-          } else if (g.state === g.state_UPDATE && _main.LV === MAXLV) { // 到达最终关卡
-            g.finalGame()
-          }
-          break
-        // P 键暂停游戏事件
-        case 80 :
-          g.state = g.state_STOP
-          break
-      }
-    })
+    // window.addEventListener('keydown', function (event) {
+    //   switch (event.keyCode) {
+    //     // 注册空格键发射事件
+    //     case 32 :
+    //       if (g.state === g.state_GAMEOVER) { // 游戏结束时
+    //         // 开始游戏
+    //         g.state = g.state_START
+    //         // 初始化
+    //         _main.start()
+    //       } else { 
+    //         // 开始游戏
+    //         ball.fired = true
+    //         g.state = g.state_RUNNING
+    //       }
+    //       break
+    //     // N 键进入下一关卡
+    //     case 78 :
+    //       // 游戏状态为通关，且不为最终关卡时
+    //       if (g.state === g.state_UPDATE && _main.LV !== MAXLV) { // 进入下一关
+    //         // 开始游戏
+    //         g.state = g.state_START
+    //         // 初始化下一关卡
+    //         _main.start(++_main.LV)
+    //       } else if (g.state === g.state_UPDATE && _main.LV === MAXLV) { // 到达最终关卡
+    //         g.finalGame()
+    //       }
+    //       break
+    //     // P 键暂停游戏事件
+    //     case 80 :
+    //       g.state = g.state_STOP
+    //       break
+    //   }
+		// })
+		// 点击按钮触发相应的事件
+		$("#start").click(function(){
+			 // 开始游戏
+			 // 往session里存一个数
+			console.log(sessionStorage.getItem("isStart"))
+			if (!sessionStorage.getItem("isStart")){
+				var callArgs = "[\"" + "begin"  + "\"]";
+				nebPay.call(dappAddress,"0","begin",callArgs,{
+					listener:begin
+				})
+			}else{
+				ball.fired = true
+				g.state = g.state_RUNNING
+			}
+		})
+		function begin(res){
+			var txhash = res.txhash;
+			$(".mask").fadeIn(500);
+			 if(txhash){
+				 testTransitionStatus(txhash,function(){
+					 sessionStorage.setItem("isStart",true)
+					 var i = 3;
+					 xunhuan = setInterval(function(){
+						 if(i<=0){
+							 clearInterval(xunhuan)
+						 }
+						 $(".mask").html(i)
+						 i--
+					 },1000)
+					 setTimeout(function(){
+					  	$(".mask").fadeOut(10);
+							ball.fired = true
+							g.state = g.state_RUNNING
+					 },4000)
+				 })
+			 }
+	 }
+		$("#reset").click(function(){
+			// 开始游戏
+				g.state = g.state_START
+				// 初始化
+				_main.start()
+		})
+		$("#pause").click(function(){
+			console.log(g)
+			// return;
+			g.state = g.state_STOP
+		})
+		$("#next").click(function(){
+		
+		
+				if (g.state === g.state_UPDATE && _main.LV !== MAXLV) { // 进入下一关
+					// 开始游戏
+					g.state = g.state_START
+					// 初始化下一关卡
+					_main.start(++_main.LV)
+				} else if (g.state === g.state_UPDATE && _main.LV === MAXLV) { // 到达最终关卡
+					g.finalGame()
+				}
+			
+		})
+		$("#addRank").click(function(){
+			jQuery(".ranks").fadeIn(500);
+		})
+		$("#ranks").click(function(){
+			nebPay.simulateCall(dappAddress,"0","getOrder","",{
+					listener:getOrders
+			})
+		})
+		// 点击取消
+		$(".cancal").click(function(){
+			jQuery(".ranks").fadeOut(10);
+		})
+		
+		$(".quxiao").click(function(){
+			$(".rankContent").fadeOut()
+		})
+		// 点击提交
+		console.log(document.querySelector(".submit"))
+		document.querySelector(".submit").onclick=function(){
+			var name = jQuery("#name").val()
+			console.log(name);
+			if(name.trim()){
+					//  拿到最高分数
+				var scoresHi =score.allScore
+				console.log(score);
+				var name = jQuery("#name").val() || "匿名"
+				var callArgs = "[\"" + name + "\",\"" + scoresHi + "\"]";
+					nebPay.call(dappAddress,"0","order",callArgs,{
+						listener:order
+				})
+			}
+		}
+		function order(res){
+			console.log(res)
+			var txhash = res.txhash;
+			jQuery(".ranks").fadeOut(500);
+			
+			if(txhash){
+				jQuery(".mask").fadeIn(500)
+				jQuery(".mask").html("请稍等...")
+				timersss = setInterval(function(){
+						neb.api.getTransactionReceipt({hash:txhash}).then(function (res) { 
+								if(res.status === 1){
+									clearInterval(timersss)
+									jQuery(".mask").fadeOut(500)
+									setTimeout(function(){
+										 tipss("提交成功","green",1000);
+									},500)
+								}
+						})
+				},2000)
+			}
+		}
     // 设置轮询定时器
     g.setTimer(paddle, ball, blockList, score)
-  }
+	}
+}
+
+function testTransitionStatus(txhash,callback){
+	timersss = setInterval(function(){
+			neb.api.getTransactionReceipt({hash:txhash}).then(function (res) { 
+					if(res.status === 1){
+						clearInterval(timersss)
+						if(callback){
+							callback()
+						}
+						return 
+					}
+			})
+	},2000)
+}
+function tipss(text,background,time){
+	var html = jQuery(".g-oks");
+	html.html(text)
+	background = background || "green"
+	time = time || 1000
+	html.css("backgroundColor",background)
+	html.fadeIn(500);
+	setTimeout(function(){
+		jQuery(".g-oks").fadeOut(1000)
+	},time)
+}
+function getOrders(res){
+	console.log(res)
+	$(".rankContent").fadeIn()
+	if(res.result){
+		res = JSON.parse(res.result)
+		res = JSON.parse(res)
+		console.log(res)
+		var ul = jQuery("#rankss");
+		var str = "";
+		if(res !== 0){
+			 var len = res.length;
+			 if(len>5){
+				 len =5;
+			 }
+			 for(var i=0;i<len;i++){
+					if(i===0){
+						str +=` <li class="first">
+						<img src="./img/one.png" alt=""> 
+						${res[i].name}：${res[i].score}分</li>`
+					}else if (i===1){
+						str +=` <li class="second">
+						<img src="./img/one2.png" alt=""> 
+						${res[i].name}：${res[i].score}分</li>`
+					}else if(i===2){
+						str +=` <li class="three">
+						<img src="./img/one3.png" alt=""> 
+						${res[i].name}：${res[i].score}分</li>`
+					}else{
+						str +=`	<li class="paddings">
+						${res[i].name}：${res[i].score}分
+									</li>`
+					}
+			 }
+			 ul.html(str);
+		}
+	}
+}
+function changeRankContent(){
+	getOrder()
 }

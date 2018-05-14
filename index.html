@@ -4,11 +4,212 @@
   <meta charset="UTF-8">
   <title>打砖块v1.1</title>
   <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/style.css">
+	<style>
+		 div button{
+			  width: 100px;
+				height: 40px;
+				line-height: 40px;
+				background-color: orange;
+				color:white;
+				border:0px;
+				border-radius: 5px;
+				font-size: 18px;
+				margin: 10px;
+				cursor: pointer;
+		 }
+		 .nexts:hover::after{
+			 content: "若当前关未过点击无效哦";
+			 position: absolute;
+			 color:white;
+			 font-size: 10px;
+			 background-color: #c00;
+			 border-radius: 5px;
+			 height: 20px;
+			 line-height: 20px;
+			 padding: 0 5px;
+		 }
+		 .mask{
+			 width: 1000px;
+			 height: 500px;
+			 background-color: rgba(0, 0, 0, .8);
+			 position: absolute;
+			 top:0;
+			 left:50%;
+			 margin-left: -500px;
+			 font-size: 50px;
+				line-height: 500px;
+				text-align: center;
+				color:white;
+				display: none;
+		 }
+  .g-oks{
+		height: 50px;
+		line-height: 50px;
+		background-color: green;
+		color:white;
+		position: absolute;
+		top:20%;
+		left: 50%;
+		margin-top:-25px;
+		margin-left: -60px;
+		border-radius: 5px;
+		display: none;
+		padding:0 10px;
+		z-index:30;
+	}
+	.ranks{
+	position: absolute;
+	width: 1000px;
+	height: 500px;
+	left:50%;
+	margin-left: -500px;
+	background-color: rgba(0, 0,0, .9);
+	display: none;
+	top:0;
+	z-index:100;
+	
+}
+.name-content{
+	width:200px;
+	margin: 100px auto;
+	background-color: white;
+	height: 110px;
+	position: relative;
+	text-align: center;
+	padding-top:20px;
+	font-size: 12px;
+	border: 10px solid white;
+	border-radius: 5px;-moz-box-shadow:0px 0px 20px #333333; -webkit-box-shadow:0px 0px 20px #333333; box-shadow:0px 0px 20px #333333;
+
+}
+.btn{
+	 width:70px;
+	 height: 30px;
+	 line-height: 30px;
+	 border-radius: 5px;
+	 background-color: orange;
+	 color:white;
+	 border: 0px;margin-left:5px;
+	 cursor: pointer;
+}
+#name{
+	width:80%;
+	height: 30px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	padding-left: 10px;
+}
+
+.rankContent{
+		position: absolute;
+		left :50%;
+		top:0;
+		margin-left: -500px;
+		height: 500px;
+		width:1000px;
+		background-color: rgba(0, 0, 0, .8);
+		display: none;
+}
+#rankss{
+	height: 300px;
+	width: 300px;
+	margin: 50px auto 0px;
+	background-color: white !important;
+	border-radius: 10px; 
+	overflow: hidden;
+	position: relative;
+	padding:20px;
+	box-sizing: border-box;
+}
+#rankss::after{
+	content: "全网排行榜";
+	font-size:20px;
+	color:#c00;
+	position: absolute;
+	top:10px;
+	margin-left:-52px;
+	font-weight: 700;
+}
+	.rankContent ul li{
+		height: 40px;
+		line-height: 40px;
+		display: flex;
+		align-items: center;
+		box-sizing: border-box;
+		margin-top:10px;
+		text-align: center;
+		font-size:14px;
+	}
+	.rankContent img{
+		width: 20px;
+		margin-left: 20px;
+		margin-right: 10px;
+		float: left;
+	}
+  .paddings{
+		padding-left: 50px;
+	}
+	.quxiao{
+		 width:60px;
+		 text-align: center;
+		 height: 30px;
+		 line-height: 30px;
+		 background-color: greenyellow;
+		 color:white;
+		 position: absolute;
+		 top:300px;
+		 left:50%;
+		 margin-left: -30px;
+		 font-size:16px;
+	}
+	</style>
 </head>
 <body>
 <canvas id="canvas" width="1000" height="500"></canvas>
-<div>使用左右方向键，进行移动；空格键发射小球并开始游戏，游戏结束时按空格键重置游戏；P 键暂停游戏；通关游戏后，按 N 键可进入下一关卡</div>
+<div>
+		<div>
+			<button id="reset">重置游戏</button>
+			<button id="start">开始游戏</button>
+			<button id="pause">暂停游戏</button>
+		</div>
+		<div>
+			<button id="next" class="nexts">进入下一关</button>
+			<button id="ranks">全网排行榜</button>
+			<button id="addRank">加入排行榜</button>
+		</div>
+		<div class="mask">
+				 请等待...
+		</div>
+		
+		
+</div>
+	<!-- 提交排名 -->
+<div class="ranks">
+			<div class="name-content">
+				<form >
+					<input type="text" placeholder="填写您的名字" id="name">
+					<div style="padding:20px;">
+							<input type="reset" value="取消" class="cancal btn">
+							<input type="button" value="提交" class="submit btn">
+					</div>
+				</form>
+			</div>
+		
+</div>
+<!-- 提示框 -->
+<div class="g-oks">
+		注册成功
+</div>
+<!-- 排行榜 -->
+<div class="rankContent">
+		<ul id="rankss">
+		</ul>
+		<button class="quxiao">返回</button>
+ </div>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="./lib/nebPay.js"></script>
+<script src="./lib/nebulas.js"></script>
 <script src="js/common.js"></script>
 <script src="js/scene.js"></script>
 <script src="js/game.js"></script>
